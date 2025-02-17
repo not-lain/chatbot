@@ -5,6 +5,9 @@ settings:
   excludeLinksFromLockfile: false
 
 dependencies:
+  '@huggingface/hub':
+    specifier: ^1.0.1
+    version: 1.0.1
   '@icons-pack/react-simple-icons':
     specifier: ^11.2.0
     version: 11.2.0(react@18.2.0)
@@ -186,6 +189,17 @@ packages:
 
   /@floating-ui/utils@0.2.9:
     resolution: {integrity: sha512-MDWhGtE+eHw5JW7lq4qhc5yRLS11ERl1c7Z6Xd0a58DozHES6EnNNwUWbMiG4J9Cgj053Bhk8zvlhFYKVhULwg==}
+    dev: false
+
+  /@huggingface/hub@1.0.1:
+    resolution: {integrity: sha512-wogGVETaNUV/wYBkny0uQD48L0rK9cttVtbaA1Rw/pGCuSYoZ8YlvTV6zymsGJfXaxQU8zup0aOR2XLIf6HVfg==}
+    engines: {node: '>=18'}
+    dependencies:
+      '@huggingface/tasks': 0.15.9
+    dev: false
+
+  /@huggingface/tasks@0.15.9:
+    resolution: {integrity: sha512-cbnZcpMHKdhURWIplVP4obHxAZcxjyRm0zI7peTPksZN4CtIOMmJC4ZqGEymo0lk+0VNkXD7ULwFJ3JjT/VpkQ==}
     dev: false
 
   /@humanfs/core@0.19.1:

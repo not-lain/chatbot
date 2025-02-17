@@ -1,36 +1,23 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Chatbot
 
 ## Getting Started
+1. create  [new huggingface application](https://huggingface.co/settings/applications/new)
+![alt text](assets/image.png)
+2. copy `.example.env.local` to `.env.local` and fill all the necessary info from your [application info](https://huggingface.co/settings/connected-applications) (ps you can find your application at the end of the page)
+![alt text](assets/image-1.png)
+![alt text](assets/image-2.png)
 
-First, run the development server:
+
+3. run the development server:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
 pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+4. click on the login button and authorise the HF login
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+![alt text](assets/image-3.png)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+5. check your terminal
 
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+![alt text](assets/image-4.png)
