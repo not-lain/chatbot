@@ -3,6 +3,7 @@
 import * as React from "react";
 import { Button } from "@/components/ui/button";
 import { ModeToggle } from "@/components/mode-toggle";
+import { SiGithub } from "@icons-pack/react-simple-icons";
 
 export function Navbar() {
   return (
@@ -15,6 +16,9 @@ export function Navbar() {
         <div className="flex items-center gap-4">
           <Button variant="ghost">About</Button>
           <Button variant="ghost">Contact</Button>
+          <Button variant="ghost">
+            <SiGithub />
+          </Button>
           <ModeToggle />
         </div>
       </div>
