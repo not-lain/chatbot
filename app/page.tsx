@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { HfInference } from "@huggingface/inference";
 import { Navbar } from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
 import { SiHuggingface } from "@icons-pack/react-simple-icons";
@@ -27,33 +28,75 @@ export default function Home() {
   };
 
   const handleSubmit = async (event?: { preventDefault?: () => void }) => {
-    event?.preventDefault?.();
-    if (!input.trim()) return;
+    if (event?.preventDefault) {
+      event.preventDefault();
+    }
+    console.log("logs");
+    console.log(input);
+    if (!input.trim() || isGenerating) return;
+    console.log(input);
 
-    const newMessage: Message = {
+    const userMessage: Message = {
       id: Date.now().toString(),
       role: "user",
       content: input,
       createdAt: new Date(),
     };
 
-    setMessages((prev) => [...prev, newMessage]);
+    setMessages((prev) => [...prev, userMessage]);
     setInput("");
     setIsGenerating(true);
 
-    // TODO: Implement actual message handling here
-    // This is just a mock response
-    setTimeout(() => {
-      const response: Message = {
-        id: Date.now().toString(),
-        role: "assistant",
-        content:
-          "This is a mock response. Implement your actual chat logic here.",
-        createdAt: new Date(),
-      };
-      setMessages((prev) => [...prev, response]);
+    try {
+      // Get access token from cookie
+      const response = await fetch("/api/auth/token");
+      const { token } = await response.json();
+
+      if (!token) {
+        throw new Error("No access token found");
+      }
+
+      const client = new HfInference(token);
+
+      const chatCompletion = await client.chatCompletion({
+        model: "meta-llama/Llama-3.2-3B-Instruct",
+        messages: [
+          ...messages.map((msg) => ({
+            role: msg.role,
+            content: msg.content,
+          })),
+          { role: "user", content: input },
+        ],
+        provider: "hf-inference",
+        max_tokens: 500,
+      });
+
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: Date.now().toString(),
+          role: "assistant",
+          content:
+            chatCompletion.choices[0].message.content ??
+            "I couldn't generate a response.",
+          createdAt: new Date(),
+        },
+      ]);
+    } catch (error) {
+      console.error("Chat error:", error);
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: Date.now().toString(),
+          role: "assistant",
+          content:
+            "Sorry, I encountered an error while processing your request.",
+          createdAt: new Date(),
+        },
+      ]);
+    } finally {
       setIsGenerating(false);
-    }, 1000);
+    }
   };
 
   const handleLogin = async () => {
