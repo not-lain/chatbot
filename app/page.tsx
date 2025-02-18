@@ -142,24 +142,14 @@ export default function Home() {
         </Button>
 
         {username && (
-          <div className="w-full max-w-2xl flex-1">
+          <div className="flex h-[500px] w-full">
             <Chat
+              className="grow"
               messages={messages}
               input={input}
               handleInputChange={handleInputChange}
               handleSubmit={handleSubmit}
               isGenerating={isGenerating}
-              suggestions={[
-                "Tell me a joke",
-                "What's the weather like?",
-                "How can I help you today?",
-              ]}
-              append={(message) => {
-                setMessages((prev) => [
-                  ...prev,
-                  { ...message, id: Date.now().toString() },
-                ]);
-              }}
             />
           </div>
         )}
