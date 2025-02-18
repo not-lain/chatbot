@@ -31,10 +31,7 @@ export default function Home() {
     if (event?.preventDefault) {
       event.preventDefault();
     }
-    console.log("logs");
-    console.log(input);
     if (!input.trim() || isGenerating) return;
-    console.log(input);
 
     const userMessage: Message = {
       id: Date.now().toString(),
