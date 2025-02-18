@@ -46,7 +46,8 @@ export async function GET(request: Request) {
     (await cookies()).set('access_token', data['access_token'], { 
       httpOnly: true, 
       secure: true,
-      sameSite: 'strict'
+      sameSite: 'strict',
+      maxAge: data['expires_in']
     });
     
     // Clear only the oauth state cookie
