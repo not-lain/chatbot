@@ -2,15 +2,15 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-# Install pnpm using npm instead of corepack
-RUN npm install -g pnpm@latest
+# Install specific version of pnpm
+RUN npm install -g pnpm@8.15.4
 
 # Copy package files
 COPY package.json ./
 COPY pnpm-lock.yaml* ./
 
-# Install dependencies
-RUN pnpm install --frozen-lockfile
+# Install dependencies with force flag
+RUN pnpm install --force
 
 # Copy the rest of the application
 COPY . .
