@@ -53,9 +53,11 @@ export async function GET(request: Request) {
     (await cookies()).delete('oauth_state');
     
     // Redirect to home page with success
-    return NextResponse.redirect(new URL('/?success=true', request.url));
+    const baseUrl = process.env.OAUTH_CLIENT_REDIRECT_URI!.split("/auth")[0];
+    return NextResponse.redirect(new URL('/', baseUrl));
   } catch (error) {
     console.error("Token exchange error:", error);
-    return NextResponse.redirect(new URL('/?error=auth_failed', request.url));
+    const baseUrl = process.env.OAUTH_CLIENT_REDIRECT_URI!.split("/auth")[0];
+    return NextResponse.redirect(new URL('/?error=auth_failed', baseUrl));
   }
 }
