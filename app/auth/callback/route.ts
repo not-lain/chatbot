@@ -40,14 +40,16 @@ export async function GET(request: Request) {
     (await cookies()).set('username', username, { 
       httpOnly: false, 
       secure: true,
-      sameSite: 'strict'
+      sameSite: 'strict',
+      maxAge: data['expires_in'],
     });
     
     (await cookies()).set('access_token', data['access_token'], { 
       httpOnly: true, 
       secure: true,
       sameSite: 'strict',
-      maxAge: data['expires_in']
+      maxAge: data['expires_in'],
+      path: '/',
     });
     
     // Clear only the oauth state cookie
