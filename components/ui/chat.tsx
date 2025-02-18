@@ -207,7 +207,7 @@ interface ChatFormProps {
 }
 
 export const ChatForm = forwardRef<HTMLFormElement, ChatFormProps>(
-  ({ children, handleSubmit, isPending, className }, ref) => {
+  ({ children, handleSubmit, className }, ref) => {
     const [files, setFiles] = useState<File[] | null>(null);
 
     const onSubmit = (event: React.FormEvent) => {
