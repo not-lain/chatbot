@@ -142,7 +142,7 @@ export default function Home() {
         </Button>
 
         {username && (
-          <div className="flex h-[500px] w-full">
+          <div className="flex h-[500px] w-full max-w-2xl mx-auto">
             <Chat
               className="grow"
               messages={messages}
