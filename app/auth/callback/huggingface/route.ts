@@ -35,12 +35,21 @@ export async function GET(request: Request) {
 
     const data = await tokenResponse.json();
     const {name: username} = await hub.whoAmI({accessToken: data['access_token']});
-    // console.log(data);
-    console.log(`username = ${username}`)
-    console.log();
     
+    // Set username and access token cookies
+    (await cookies()).set('username', username, { 
+      httpOnly: false, 
+      secure: true,
+      sameSite: 'strict'
+    });
     
-    // Clear the oauth state cookie
+    (await cookies()).set('access_token', data['access_token'], { 
+      httpOnly: true, 
+      secure: true,
+      sameSite: 'strict'
+    });
+    
+    // Clear only the oauth state cookie
     (await cookies()).delete('oauth_state');
     
     // Redirect to home page with success
