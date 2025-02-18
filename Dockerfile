@@ -1,15 +1,16 @@
-FROM node:20
+FROM node:20-alpine
 
 WORKDIR /app
 
-# Install pnpm
-RUN corepack enable
+# Install pnpm using npm instead of corepack
+RUN npm install -g pnpm@latest
 
 # Copy package files
-COPY package.json pnpm-lock.yaml ./
+COPY package.json ./
+COPY pnpm-lock.yaml* ./
 
 # Install dependencies
-RUN pnpm install
+RUN pnpm install --frozen-lockfile
 
 # Copy the rest of the application
 COPY . .
