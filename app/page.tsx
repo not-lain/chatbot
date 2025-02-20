@@ -29,6 +29,9 @@ export default function Home() {
   const [input, setInput] = React.useState("");
   const [isGenerating, setIsGenerating] = React.useState(false);
   const [availableModels, setAvailableModels] = React.useState<string[]>([]);
+  const [selectedProvider, setSelectedProvider] = React.useState(providers[0]);
+  const [selectedModel, setSelectedModel] = React.useState<string>("");
+  const [selectedTask, setSelectedTask] = React.useState(tasks[0]);
 
   React.useEffect(() => {
     const checkAuth = async () => {
@@ -39,13 +42,17 @@ export default function Home() {
     checkAuth();
   }, []);
 
-  // Add new useEffect for initial models fetch
   React.useEffect(() => {
     if (username) {
-      // Fetch models with default parameters when component mounts
       getModels(tasks[0], providers[0]);
     }
   }, [username]);
+
+  React.useEffect(() => {
+    if (username && availableModels.length > 0) {
+      setSelectedModel(availableModels[0]);
+    }
+  }, [username, availableModels]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setInput(e.target.value);
@@ -67,7 +74,6 @@ export default function Home() {
     const data = await response.json();
     const modelIds = data.map((model: { id: string }) => model.id);
 
-    // Update the state with new models
     setAvailableModels(modelIds);
     return modelIds;
   };
@@ -77,6 +83,11 @@ export default function Home() {
       event.preventDefault();
     }
     if (!input.trim() || isGenerating) return;
+
+    if (!selectedModel || !selectedProvider) {
+      console.error("No model or provider selected");
+      return;
+    }
 
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -90,7 +101,6 @@ export default function Home() {
     setIsGenerating(true);
 
     try {
-      // Get access token from cookie
       const response = await fetch("/api/auth/token");
       const { token } = await response.json();
 
@@ -99,9 +109,15 @@ export default function Home() {
       }
 
       const client = new HfInference(token);
+      console.log(
+        "Using model:",
+        selectedModel,
+        "with provider:",
+        selectedProvider
+      );
 
       const chatCompletion = await client.chatCompletion({
-        model: "meta-llama/Llama-3.2-3B-Instruct",
+        model: selectedModel,
         messages: [
           ...messages.map((msg) => ({
             role: msg.role,
@@ -109,7 +125,7 @@ export default function Home() {
           })),
           { role: "user", content: input },
         ],
-        provider: providers[0],
+        provider: selectedProvider,
         max_tokens: 500,
       });
 
@@ -191,11 +207,8 @@ export default function Home() {
                 id="task"
                 dropdown_values={tasks}
                 onChange={(task) => {
-                  const provider =
-                    document
-                      .querySelector("#providers")
-                      ?.getAttribute("data-value") || providers[0];
-                  getModels(task, provider);
+                  setSelectedTask(task);
+                  getModels(task, selectedProvider);
                 }}
               />
               <DropDownComponenet
@@ -204,17 +217,15 @@ export default function Home() {
                 dropdown_values={providers}
                 data-provider-dropdown
                 onChange={(provider) => {
-                  const task =
-                    document
-                      .querySelector("#task")
-                      ?.getAttribute("data-value") || tasks[0];
-                  getModels(task, provider);
+                  setSelectedProvider(provider);
+                  getModels(selectedTask, provider);
                 }}
               />
               <DropDownComponenet
                 id="models"
                 label="Models"
                 dropdown_values={availableModels}
+                onChange={setSelectedModel}
               />
             </div>
             <div className="flex h-[500px] w-full max-w-2xl mx-auto">
