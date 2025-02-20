@@ -5,14 +5,30 @@ import { HfInference } from "@huggingface/inference";
 import { Navbar } from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
 import { SiHuggingface } from "@icons-pack/react-simple-icons";
-import { Chat } from "@/components/ui/chat";
+import { Chat } from "@/components/chatInterface";
 import { Message } from "@/components/ui/chat-message";
+import { DropDownComponenet } from "@/components/radioDropdown";
+
+const tasks = ["text-generation"];
+
+const providers = [
+  "hf-inference",
+  "fal-ai",
+  "fireworks-ai",
+  "hyperbolic",
+  "nebius",
+  "novita",
+  "replicate",
+  "sambanova",
+  "together",
+];
 
 export default function Home() {
   const [username, setUsername] = React.useState<string | null>(null);
   const [messages, setMessages] = React.useState<Message[]>([]);
   const [input, setInput] = React.useState("");
   const [isGenerating, setIsGenerating] = React.useState(false);
+  const [availableModels, setAvailableModels] = React.useState<string[]>([]);
 
   React.useEffect(() => {
     const checkAuth = async () => {
@@ -23,8 +39,37 @@ export default function Home() {
     checkAuth();
   }, []);
 
+  // Add new useEffect for initial models fetch
+  React.useEffect(() => {
+    if (username) {
+      // Fetch models with default parameters when component mounts
+      getModels(tasks[0], providers[0]);
+    }
+  }, [username]);
+
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setInput(e.target.value);
+  };
+
+  const getModels = async (task: string, provider: string) => {
+    const tokenResponse = await fetch("/api/auth/token");
+    const { token } = await tokenResponse.json();
+
+    const response = await fetch(
+      `https://huggingface.co/api/models?filter=${task}&limit=5&full=true&config=true&inference_provider=${provider}&expand=inferenceProviderMapping`,
+      {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    const data = await response.json();
+    const modelIds = data.map((model: { id: string }) => model.id);
+
+    // Update the state with new models
+    setAvailableModels(modelIds);
+    return modelIds;
   };
 
   const handleSubmit = async (event?: { preventDefault?: () => void }) => {
@@ -64,7 +109,7 @@ export default function Home() {
           })),
           { role: "user", content: input },
         ],
-        provider: "hf-inference",
+        provider: providers[0],
         max_tokens: 500,
       });
 
@@ -139,16 +184,50 @@ export default function Home() {
         </Button>
 
         {username && (
-          <div className="flex h-[500px] w-full max-w-2xl mx-auto">
-            <Chat
-              className="grow"
-              messages={messages}
-              input={input}
-              handleInputChange={handleInputChange}
-              handleSubmit={handleSubmit}
-              isGenerating={isGenerating}
-            />
-          </div>
+          <>
+            <div className="flex items-center gap-4 w-full max-w-2xl">
+              <DropDownComponenet
+                label="Task"
+                id="task"
+                dropdown_values={tasks}
+                onChange={(task) => {
+                  const provider =
+                    document
+                      .querySelector("#providers")
+                      ?.getAttribute("data-value") || providers[0];
+                  getModels(task, provider);
+                }}
+              />
+              <DropDownComponenet
+                id="providers"
+                label="Inference Providers"
+                dropdown_values={providers}
+                data-provider-dropdown
+                onChange={(provider) => {
+                  const task =
+                    document
+                      .querySelector("#task")
+                      ?.getAttribute("data-value") || tasks[0];
+                  getModels(task, provider);
+                }}
+              />
+              <DropDownComponenet
+                id="models"
+                label="Models"
+                dropdown_values={availableModels}
+              />
+            </div>
+            <div className="flex h-[500px] w-full max-w-2xl mx-auto">
+              <Chat
+                className="grow"
+                messages={messages}
+                input={input}
+                handleInputChange={handleInputChange}
+                handleSubmit={handleSubmit}
+                isGenerating={isGenerating}
+              />
+            </div>
+          </>
         )}
       </main>
     </div>
