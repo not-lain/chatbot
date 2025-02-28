@@ -20,6 +20,7 @@ interface ChatPropsBase {
   className?: string;
   handleInputChange: React.ChangeEventHandler<HTMLTextAreaElement>;
   isGenerating: boolean;
+  isStreaming?: boolean;
   stop?: () => void;
   onRateResponse?: (
     messageId: string,
@@ -46,6 +47,7 @@ export function Chat({
   handleInputChange,
   stop,
   isGenerating,
+  isStreaming = false,
   append,
   suggestions,
   className,
@@ -107,6 +109,7 @@ export function Chat({
           <MessageList
             messages={messages}
             isTyping={isTyping}
+            isStreaming={isStreaming}
             messageOptions={messageOptions}
           />
         </ChatMessages>

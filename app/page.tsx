@@ -32,6 +32,8 @@ export default function Home() {
   const [selectedProvider, setSelectedProvider] = React.useState(providers[0]);
   const [selectedModel, setSelectedModel] = React.useState<string>("");
   const [selectedTask, setSelectedTask] = React.useState(tasks[0]);
+  const [isStreaming, setIsStreaming] = React.useState(false);
+  const abortController = React.useRef<AbortController | null>(null);
 
   React.useEffect(() => {
     const checkAuth = async () => {
@@ -99,6 +101,7 @@ export default function Home() {
     setMessages((prev) => [...prev, userMessage]);
     setInput("");
     setIsGenerating(true);
+    setIsStreaming(true);
 
     try {
       const response = await fetch("/api/auth/token");
@@ -109,38 +112,70 @@ export default function Home() {
       }
 
       const client = new HfInference(token);
-      console.log(
-        "Using model:",
-        selectedModel,
-        "with provider:",
-        selectedProvider
-      );
+      abortController.current = new AbortController();
 
-      const chatCompletion = await client.chatCompletion({
-        model: selectedModel,
-        messages: [
-          ...messages.map((msg) => ({
-            role: msg.role,
-            content: msg.content,
-          })),
-          { role: "user", content: input },
-        ],
-        provider: selectedProvider,
-        max_tokens: 500,
-      });
-
+      // Create initial assistant message
+      const assistantMessageId = Date.now().toString();
       setMessages((prev) => [
         ...prev,
         {
-          id: Date.now().toString(),
+          id: assistantMessageId,
           role: "assistant",
-          content:
-            chatCompletion.choices[0].message.content ??
-            "I couldn't generate a response.",
+          content: "",
           createdAt: new Date(),
+          isStreaming: true,
         },
       ]);
-    } catch (error) {
+
+      const stream = client.chatCompletionStream(
+        {
+          model: selectedModel,
+          messages: [
+            ...messages.map((msg) => ({
+              role: msg.role,
+              content: msg.content,
+            })),
+            { role: "user", content: input },
+          ],
+          provider: selectedProvider,
+          max_new_tokens: 500,
+        },
+        { signal: abortController.current.signal }
+      );
+
+      let accumulatedContent = "";
+
+      for await (const chunk of stream) {
+        if (chunk.choices && chunk.choices.length > 0) {
+          const newContent = chunk.choices[0].delta.content || "";
+          accumulatedContent += newContent;
+
+          setMessages((prev) => {
+            const updated = [...prev];
+            const lastMessage = updated[updated.length - 1];
+            if (lastMessage && lastMessage.id === assistantMessageId) {
+              lastMessage.content = accumulatedContent;
+            }
+            return updated;
+          });
+        }
+      }
+
+      // Final update to remove streaming state
+      setMessages((prev) => {
+        const updated = [...prev];
+        const lastMessage = updated[updated.length - 1];
+        if (lastMessage && lastMessage.id === assistantMessageId) {
+          lastMessage.isStreaming = false;
+        }
+        return updated;
+      });
+    } catch (error: unknown) {
+      if (error instanceof Error && error.name === "AbortError") {
+        console.log("Stream was aborted");
+        return;
+      }
+
       console.error("Chat error:", error);
       setMessages((prev) => [
         ...prev,
@@ -154,8 +189,18 @@ export default function Home() {
       ]);
     } finally {
       setIsGenerating(false);
+      setIsStreaming(false);
+      abortController.current = null;
     }
   };
+
+  const handleStop = React.useCallback(() => {
+    if (abortController.current) {
+      abortController.current.abort();
+      setIsGenerating(false);
+      setIsStreaming(false);
+    }
+  }, []);
 
   const handleLogin = async () => {
     try {
@@ -236,6 +281,8 @@ export default function Home() {
                 handleInputChange={handleInputChange}
                 handleSubmit={handleSubmit}
                 isGenerating={isGenerating}
+                isStreaming={isStreaming}
+                stop={handleStop}
               />
             </div>
           </>

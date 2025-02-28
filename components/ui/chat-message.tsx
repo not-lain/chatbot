@@ -81,6 +81,7 @@ export interface Message {
   createdAt?: Date;
   experimental_attachments?: Attachment[];
   toolInvocations?: ToolInvocation[];
+  isStreaming?: boolean; // Add this field
 }
 
 export interface ChatMessageProps extends Message {
@@ -100,6 +101,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
   className,
   experimental_attachments,
   toolInvocations,
+  isStreaming, // Add this prop
 }) => {
   const files = useMemo(() => {
     return experimental_attachments?.map((attachment) => {
@@ -130,7 +132,13 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
         </div>
       ) : null}
 
-      <div className={cn(chatBubbleVariants({ isUser, animation }), className)}>
+      <div
+        className={cn(
+          chatBubbleVariants({ isUser, animation }),
+          className,
+          isStreaming && "after:content-['▋'] after:ml-1 after:animate-blink"
+        )}
+      >
         <div>
           <MarkdownRenderer>{content}</MarkdownRenderer>
         </div>
